@@ -1,0 +1,126 @@
+<?php
+
+namespace Dodatki\KategorieBundle\Entity;
+
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Category
+ *
+ * @ORM\Table()
+ * @ORM\Entity
+ */
+class Category
+{
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Category", mappedBy="parent")
+     */
+    private $children;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Category", inversedBy="children")
+     * @ORM\JoinColumn(name="parent", referencedColumnName="id")
+     */
+    private $parent;
+
+    /**
+     * @ORM\Column(name="ikona", type="string", length=255)
+     */
+    private $ikona;
+
+
+    /**
+     * @ORM\Column(name="name", type="string", length=255)
+     */
+    private $name;
+
+    
+   public function __construct()
+    {
+        $this->children = new ArrayCollection();
+    }
+
+    /**
+     * Get id
+     *
+     * @return integer 
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set children
+     *
+     * @param string $children
+     * @return Category
+     */
+    public function setChildren(Category $child) {
+       $this->children[] = $child;
+       $child->setParent($this);
+    }
+
+    /**
+     * Get children
+     *
+     * @return string 
+     */
+    public function getChildren()
+    {
+        return $this->children;
+    }
+
+    /**
+     * Set parent
+     *
+     * @param string $parent
+     * @return Category
+     */
+    public function setParent(Category $parent) {
+       $this->parent = $parent;
+    }
+
+    /**
+     * Get parent
+     *
+     * @return string 
+     */
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
+    /**
+     * Set ikona
+     *
+     * @param string $ikona
+     * @return Category
+     */
+    public function setIkona($ikona)
+    {
+        $this->ikona = $ikona;
+
+        return $this;
+    }
+
+    /**
+     * Get ikona
+     *
+     * @return string 
+     */
+    public function getIkona()
+    {
+        return $this->ikona;
+    }
+}

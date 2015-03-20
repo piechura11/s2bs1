@@ -1,0 +1,13 @@
+book_web:
+    resource: "@BookWebBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
+dodatki_kategorie:
+    resource: "@DodatkiKategorieBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
+app:
+    resource: @AppBundle/Controller/
+    type:     annotation

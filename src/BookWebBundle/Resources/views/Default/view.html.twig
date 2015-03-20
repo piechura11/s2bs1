@@ -1,0 +1,11 @@
+<h4>Widok wszytkich:</h4>
+<ul>
+    {% for user in dane %}
+        <li>Imie: {{ user.name|e }}, Nazwiso {{ user.surname }}{%if user.isDead==false %} Ta osoba żyje {% else %} Ta osoba nie żyje{% endif %}
+        <a href="http://localhost/Symfony/web/app_dev.php/admin/autor/remove/{{user.id}}"> Usuń </a>
+        <a href="http://localhost/Symfony/web/app_dev.php/admin/autor/edit/{{user.id}}">Edytuj</a>
+        </li>
+
+    {% endfor %}
+</ul>
+<a href="http://localhost/Symfony/web/app_dev.php/admin/autor/new">Stwórz nowego autora</a>

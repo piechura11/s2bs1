@@ -1,0 +1,5 @@
+
+   {% for user in dane %}
+        <li>Imie: {{ user.name|e }}, Nazwiso {{ user.surname }}{%if user.isDead==false %} Ta osoba żyje{% else %}Ta osoba nie żyje{% endif %}
+        
+{% endfor %}

@@ -1,0 +1,6 @@
+<h1>Kategorie</h1>
+<ul>
+    {% for kat in kategorie %}
+        <li><a href="http://localhost/Symfony/web/app_dev.php/kategorie/{{kat.name}}">{{ kat.name }}</a></li>
+    {% endfor %}
+</ul>

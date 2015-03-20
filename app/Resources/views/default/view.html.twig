@@ -1,0 +1,9 @@
+<h4>Widok wszytkich:</h4>
+<ul>
+    {% for user in dane %}
+        <li>{{ user.name|e }}</li>
+        <li>{{ user.surname }}</li>
+         <li>{{ user.surname }}</li>
+         <li>{{ user.isDead }}</li>
+    {% endfor %}
+</ul>
