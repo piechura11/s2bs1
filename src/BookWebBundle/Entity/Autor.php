@@ -1,7 +1,7 @@
 <?php
 
 namespace BookWebBundle\Entity;
-use Symfony\Component\Validator\Constraints;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 //kom
 /**
@@ -31,7 +31,7 @@ class Autor
     /**
      * @var string
      *
-     * @Constraints\Length(min=3, minMessage="Ziom co najmiej {{ limit }}!")
+     * @Assert\Length(min=3, minMessage="Ziom co najmiej {{ limit }}!")
      * @ORM\Column(name="surname", type="string", length=128)
      */
     private $surname;

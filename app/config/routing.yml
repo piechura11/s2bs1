@@ -1,3 +1,8 @@
+linker:
+    resource: "@LinkerBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
 book_web:
     resource: "@BookWebBundle/Controller/"
     type:     annotation
