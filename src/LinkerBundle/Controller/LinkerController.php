@@ -14,7 +14,8 @@ class LinkerController extends Controller
      * @Route("/index")
      */
     public function indexAction(Request $request )
-    {
+    {   #todo -pobieranie ostatnich 10 linkerów, - wyswietlanie statystyk(-ilość linkerów w bd, licznik odwiedzin)
+        # -hashowanie hasła, -generowanie linku
         $link = new Link();
         $form = $this -> createFormBuilder($link)
         ->add('longLink', 'textarea', array('required' => 'NotBlank', 'label'=>'Wpisz link do skrócenia'))
@@ -98,7 +99,6 @@ class LinkerController extends Controller
                     return $this->render('LinkerBundle:Default:protected.html.twig', array('form'=>$form->createView(), 'shortLink'=>$shortLink
                 ));                    
                 }
-
             }
             return $this->render('LinkerBundle:Default:protected.html.twig', array('form'=>$form->createView(), 'shortLink'=>$shortLink
                 ));
