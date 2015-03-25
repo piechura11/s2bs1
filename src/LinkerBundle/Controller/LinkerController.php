@@ -44,17 +44,12 @@ class LinkerController extends Controller
         			$form->get('shortLink')->addError(new FormError('Rządana nazwa już istnieje w bazie danych, wybierz inną 
         				lub zostanie ona wygenerowana'));
         			return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>$form->createView()));
-        		}
-        		}
-        	
+        		}}
         	else{
         		//generuj i ustaw
         		$link->setShortLink('generuje');
         	}
 
-
-
-        	
         	$dm = $this->getDoctrine()->getManager();
         	$dm ->persist($link);
         	$dm ->flush();
@@ -68,19 +63,48 @@ class LinkerController extends Controller
      * @Route("/show/{link}", name="show")
      */
     public function showAction($link){
-
-		return $this->render('LinkerBundle:Default:show.html.twig', array('link'=>$link));
+        $linker=new Link();
+        $dm=$this->getDoctrine()->getManager();
+        $linker=$dm->getRepository('LinkerBundle:Link')->findOneByShortLink($link);
+       
+		return $this->render('LinkerBundle:Default:show.html.twig', array('link'=>$linker->getShortLink()));
     }
 
     /**
      * @Route("/showLong/{shortLink}")
      */
-    public function showLongAction($shortLink){
+    public function showLongAction(Request $request, $shortLink){
     	$link = new Link();
     	$dm=$this->getDoctrine()->getManager();
-    	$link=$dm->getRepository('LinkerBundle:Link')->findOneBy(array('shortLink'=>$shortLink));
+    	$link=$dm->getRepository('LinkerBundle:Link')->findOneByShortLink($shortLink);
 
-    	return $this->redirect('http://symfony.com/doc/current/cookbook/form/form_customization.html');
+        $shortLink=$link->getShortLink();
+        //jeśli tryb chroniony podaj haslo
+        if($link->getModyficator()==2){
+            $protected = new Link();
+            $form = $this->createFormBuilder($protected)
+            ->add('password', 'password', array('required'=>true))
+            ->getForm();
+
+            $form->handleRequest($request);
+            if($form->isValid()){
+                //sprawdza poprawność hasla
+                if($link->getPassword()==$protected->getPassword()){
+
+                    return $this->redirect($link->getLongLink());   
+                }
+                else{
+                    $form->get('password')->addError(new FormError('Podaj hasło aby przejść do strony'));
+                    return $this->render('LinkerBundle:Default:protected.html.twig', array('form'=>$form->createView(), 'shortLink'=>$shortLink
+                ));                    
+                }
+
+            }
+            return $this->render('LinkerBundle:Default:protected.html.twig', array('form'=>$form->createView(), 'shortLink'=>$shortLink
+                ));
+        }
+
+    	return $this->redirect($link->getLongLink());
     	
     }
 
