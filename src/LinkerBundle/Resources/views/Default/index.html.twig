@@ -1,3 +1,20 @@
+   <html>
+        <head>  
+            {% block stylesheets %}
+                  <link href="{{ asset('css/foundation.min.css') }}" rel="stylesheet" />
+            {% endblock %}
+
+        </head>
+        <body>
+  <div class="row">
+      <div class="large-12 columns">
+        <h1>LinkerBundle</h1>
+      </div>
+    </div>
+
+        <div class="row">
+      <div class="large-12 columns">
+            	<div class="panel">
 Formularz:
 {{form_start(form)}}
 {{form_errors(form)}}
@@ -9,3 +26,17 @@ Opcjonalne:
 {{form_row(form.description)}}
 <button type="submit">Utwórz krótki URL</button>
 {{form_end(form)}}
+      </div>
+    </div>
+  </div>
+        </body>
+    </html>
+
+
+
+
+
+
+
+
+

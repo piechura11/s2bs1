@@ -165,7 +165,7 @@ class Link
      */
     public function setPassword($password)
     {
-        $this->password = $password;
+        $this->password = hash('sha1', $password);
 
         return $this;
     }
@@ -179,4 +179,6 @@ class Link
     {
         return $this->password;
     }
+
+    
 }

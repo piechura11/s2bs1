@@ -8,6 +8,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use LinkerBundle\Entity\Link;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Form\FormError;
+
+
 class LinkerController extends Controller
 {
     /**
@@ -15,7 +17,7 @@ class LinkerController extends Controller
      */
     public function indexAction(Request $request )
     {   #todo -pobieranie ostatnich 10 linkerów, - wyswietlanie statystyk(-ilość linkerów w bd, licznik odwiedzin)
-        # -hashowanie hasła, -generowanie linku
+       
         $link = new Link();
         $form = $this -> createFormBuilder($link)
         ->add('longLink', 'textarea', array('required' => 'NotBlank', 'label'=>'Wpisz link do skrócenia'))
@@ -47,13 +49,29 @@ class LinkerController extends Controller
         			return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>$form->createView()));
         		}}
         	else{
-        		//generuj i ustaw
-        		$link->setShortLink('generuje');
-        	}
+            //generator 
+            #problem, probowałem wrzucić generator w osobną funkcje i tylko sie do niego odwołać ale wyskakuje mi:
+            # "Attempted to call function "generateRandomString" from namespace "LinkerBundle\Controller""
+                $length = 4;
+                $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                $charactersLength = strlen($characters);
+                $randomString = '';
+                for ($i = 0; $i < $length; $i++) {
+                $randomString .= $characters[rand(0, $charactersLength - 1)];
+                }
+                //sprawdzenie czy nie ma podobnego w bazie danych
+        		$dm=$this->getDoctrine()->getManager();
+                $sprawdzanyLink=$dm->getRepository('LinkerBundle:Link')->findByShortLink($randomString);
+                if(!$sprawdzanyLink){
+                    $link->setShortLink($randomString);
+                }
+                else 
+                return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>$form->createView()));
+        	   }
 
-        	$dm = $this->getDoctrine()->getManager();
-        	$dm ->persist($link);
-        	$dm ->flush();
+        	   $dm = $this->getDoctrine()->getManager();
+        	   $dm ->persist($link);
+        	   $dm ->flush();
 
         	return $this->redirectToRoute('show', array('link'=>$link->getShortLink()));
         }
@@ -72,7 +90,7 @@ class LinkerController extends Controller
     }
 
     /**
-     * @Route("/showLong/{shortLink}")
+     * @Route("/long/{shortLink}")
      */
     public function showLongAction(Request $request, $shortLink){
     	$link = new Link();
@@ -107,11 +125,21 @@ class LinkerController extends Controller
 
     	return $this->redirect($link->getLongLink());
 
-    	$link=$dm->getRepository('LinkerBundle:Link')->findOneBy(array('shortLink'=>$shortLink));
-#problem wywla mi że nie ma takiej strony, nawet kiedy recznie ją ustawiłem 
-    	return $this->redirect('http://symfony.com/doc/current/cookbook/form/form_customization.html');
+
 
     	
     }
-
+/*
+    
+    public function generateRandomString($length = 4) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
+    }
+    
+*/
 }
