@@ -77,6 +77,7 @@ class LinkerController extends Controller
     public function showLongAction(Request $request, $shortLink){
     	$link = new Link();
     	$dm=$this->getDoctrine()->getManager();
+
     	$link=$dm->getRepository('LinkerBundle:Link')->findOneByShortLink($shortLink);
 
         $shortLink=$link->getShortLink();
@@ -105,6 +106,11 @@ class LinkerController extends Controller
         }
 
     	return $this->redirect($link->getLongLink());
+
+    	$link=$dm->getRepository('LinkerBundle:Link')->findOneBy(array('shortLink'=>$shortLink));
+#problem wywla mi że nie ma takiej strony, nawet kiedy recznie ją ustawiłem 
+    	return $this->redirect('http://symfony.com/doc/current/cookbook/form/form_customization.html');
+
     	
     }
 
