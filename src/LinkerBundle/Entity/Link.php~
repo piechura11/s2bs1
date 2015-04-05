@@ -187,27 +187,4 @@ class Link
     }
 
     
-
-    /**
-     * Set addDate
-     *
-     * @param \DateTime $addDate
-     * @return Link
-     */
-    public function setAddDate()
-    {   $now = new \DateTime();
-        $this->addDate=$now;
-
-        return $this;
-    }
-
-    /**
-     * Get addDate
-     *
-     * @return \DateTime 
-     */
-    public function getAddDate()
-    {
-        return $this->addDate;
-    }
 }

@@ -1,0 +1,10 @@
+services:
+    linker_helper:
+        class: LinkerBundle\Service\Helper
+        calls:
+            - [setDoctrine, [@doctrine]]
+    linker.twig_extension:
+        class: LinkerBundle\Twig\LinkerExtension
+        public: false
+        tags: 
+           - { name: twig.extension }

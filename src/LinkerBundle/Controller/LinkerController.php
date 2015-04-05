@@ -8,8 +8,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use LinkerBundle\Entity\Link;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Form\FormError;
-
-
+use LinkerBundle\Form\LinkForm;
+use LinkerBundle\Service\Helper;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 class LinkerController extends Controller
 {
     /**
@@ -17,67 +18,63 @@ class LinkerController extends Controller
      */
     public function indexAction(Request $request )
     {   #todo -pobieranie ostatnich 10 linkerów, - wyswietlanie statystyk(-ilość linkerów w bd, licznik odwiedzin)
-       
+        #todo -przeglądarka linków, wyszukiwarka
+        #todo -mailing przy podanym adresie, link do edycji, dodawania hała, zmieniania hasła, opisu
+        #todo -dodać czas dodania do bazy danych
         $link = new Link();
-        $form = $this -> createFormBuilder($link)
-        ->add('longLink', 'textarea', array('required' => 'NotBlank', 'label'=>'Wpisz link do skrócenia'))
-        ->add('shortLink', 'text', array('required'=>false, 'label'=>'Nazwa krótkiego Url'))
-        ->add('description', 'textarea', array('required'=>false, 'label'=>'Opis'))
-        ->add('modyficator', 'choice', array( 'label'=>'Typ', 'data'=>0, 'choices' => array(
-        	0=>'Publiczny',
-        	1=>'Prywatny',
-        	2=>'Chroniony')))
-        ->add('password', 'password', array('required'=>false, 'label'=>'Hasło'))
-        ->getForm();
-      
-
-
+        $form = $this -> createForm(new LinkForm(), $link);
         $form -> handleRequest($request);
-        if($form->isValid()){
+        $helper = $this->get('linker_helper');
+        if($form->isValid())
+        {
+            $flag = true;
         	//sprawdzenie czy haslo zostalo ustawione przy trybie chronionym
-        	if($link->getModyficator()==2 && $link->getPassword()==null){
+        	if($link->getModyficator()==2 && $link->getPassword()==null)
+            {
         		$form->get('password')->addError(new FormError('Podaj hasło'));
-        		return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>$form->createView()));	
+                $flag = false;
         	}
         	//sprawdzenie unikalności shortLinku
-        	if($link->getShortLink()){
-        		$dm=$this->getDoctrine()->getManager();
-        		$sprawdzanyLink=$dm->getRepository('LinkerBundle:Link')->findByShortLink($link->getShortLink());
-        		if($sprawdzanyLink){
+        	if($link->getShortLink())
+            {
+        		if(!$helper->unique($link->getShortLink()))
+                {
+
         			$form->get('shortLink')->addError(new FormError('Rządana nazwa już istnieje w bazie danych, wybierz inną 
         				lub zostanie ona wygenerowana'));
-        			return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>$form->createView()));
-        		}}
-        	else{
-            //generator 
-            #problem, probowałem wrzucić generator w osobną funkcje i tylko sie do niego odwołać ale wyskakuje mi:
-            # "Attempted to call function "generateRandomString" from namespace "LinkerBundle\Controller""
-                $length = 4;
-                $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                $charactersLength = strlen($characters);
-                $randomString = '';
-                for ($i = 0; $i < $length; $i++) {
-                $randomString .= $characters[rand(0, $charactersLength - 1)];
-                }
-                //sprawdzenie czy nie ma podobnego w bazie danych
-        		$dm=$this->getDoctrine()->getManager();
-                $sprawdzanyLink=$dm->getRepository('LinkerBundle:Link')->findByShortLink($randomString);
-                if(!$sprawdzanyLink){
+                    $flag = false;
+        		}
+            }
+             //jeśli trafił na błędy renderuje formularz z wiadomościami                                  
+             if($flag == false)
+             {
+                 return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>$form->createView()));  
+             }  
+            //generowanie shortLinku
+           if(!$link->getShortLink()) 
+            {
+                //sprawdzenie unikalności, jeśli nie jest, generuje
+                $i = false;
+                while($i == false)
+                {
+                    $randomString = $helper->randGenerator();
+                    if($helper->unique($randomString))
+                    {
                     $link->setShortLink($randomString);
+                    $i = true;
+                    }
                 }
-                else 
-                return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>$form->createView()));
-        	   }
+            }    
 
+               $link->setAddDate();
         	   $dm = $this->getDoctrine()->getManager();
         	   $dm ->persist($link);
         	   $dm ->flush();
-
         	return $this->redirectToRoute('show', array('link'=>$link->getShortLink()));
         }
-
         return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>$form->createView()));
     }
+
     /**
      * @Route("/show/{link}", name="show")
      */
@@ -85,7 +82,6 @@ class LinkerController extends Controller
         $linker=new Link();
         $dm=$this->getDoctrine()->getManager();
         $linker=$dm->getRepository('LinkerBundle:Link')->findOneByShortLink($link);
-       
 		return $this->render('LinkerBundle:Default:show.html.twig', array('link'=>$linker->getShortLink()));
     }
 
@@ -95,12 +91,11 @@ class LinkerController extends Controller
     public function showLongAction(Request $request, $shortLink){
     	$link = new Link();
     	$dm=$this->getDoctrine()->getManager();
-
     	$link=$dm->getRepository('LinkerBundle:Link')->findOneByShortLink($shortLink);
 
         $shortLink=$link->getShortLink();
         //jeśli tryb chroniony podaj haslo
-        if($link->getModyficator()==2){
+        if($link->getModyficator() == 2){
             $protected = new Link();
             $form = $this->createFormBuilder($protected)
             ->add('password', 'password', array('required'=>true))
@@ -109,7 +104,7 @@ class LinkerController extends Controller
             $form->handleRequest($request);
             if($form->isValid()){
                 //sprawdza poprawność hasla
-                if($link->getPassword()==$protected->getPassword()){
+                if($link->getPassword() == $protected->getPassword()){
 
                     return $this->redirect($link->getLongLink());   
                 }
@@ -129,17 +124,42 @@ class LinkerController extends Controller
 
     	
     }
-/*
-    
-    public function generateRandomString($length = 4) {
-    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    $charactersLength = strlen($characters);
-    $randomString = '';
-    for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    /**
+     * @Route("/kontakt")
+     */
+    public function mailMe()
+    {
+        $mailer = $this->get('mailer');
+        $message =$mailer->createMessage()
+        ->setFrom('piechura11@gmail.com')
+        ->setTo('piechura11@gmail.com')
+        ->setSubject('Ważna sprawa')
+        ->setBody('treść', 'text/html');
+
+        $mailer->send($message);
+        ////poprawić szablon inaczej nie wysysła
+
+        return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>'form'));
     }
-    return $randomString;
+    /**
+     * @Route("/baza")
+     */
+    public function bazaAction()
+    {
+        //wyswietla wszytkie wpisy publiczne wraz z opisem i skrótem oraz czasem dodania
+        // tabela -skrócony link, data dodania, opis
+        $qb = $this->getDoctrine()->getManager()->getRepository('LinkerBundle:Link')
+        ->createQueryBuilder('u');
+        $qb->select( 'u.shortLink', 'u.addDate', 'u.longLink')
+        ->where('u.modyficator = 0')
+        ->orderBy('u.addDate', 'ASC');
+        $dane = $qb->getQuery()->getResult();
+
+        return $this->render('LinkerBundle:Default:baza.html.twig', array('qb'=>$dane));
     }
-    
-*/
+
+
+    //zrobić wyszykiwarke
+
+
 }
