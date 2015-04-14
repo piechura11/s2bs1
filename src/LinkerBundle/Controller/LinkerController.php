@@ -4,13 +4,14 @@ namespace LinkerBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use LinkerBundle\Entity\Link;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Form\FormError;
 use LinkerBundle\Form\LinkForm;
 use LinkerBundle\Service\Helper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use LinkerBundle\Service\Paginator;
+
 class LinkerController extends Controller
 {
     /**
@@ -18,32 +19,31 @@ class LinkerController extends Controller
      */
     public function indexAction(Request $request )
     {   #todo -pobieranie ostatnich 10 linkerów, - wyswietlanie statystyk(-ilość linkerów w bd, licznik odwiedzin)
-        #todo -przeglądarka linków, wyszukiwarka
+        #todo - wyszukiwarka
         #todo -mailing przy podanym adresie, link do edycji, dodawania hała, zmieniania hasła, opisu
-        #todo -dodać czas dodania do bazy danych
+
         $link = new Link();
         $form = $this -> createForm(new LinkForm(), $link);
-        $form -> handleRequest($request);
+        $form->handleRequest($request);
         $helper = $this->get('linker_helper');
         if($form->isValid())
         {
             $flag = true;
-        	//sprawdzenie czy haslo zostalo ustawione przy trybie chronionym
-        	if($link->getModyficator()==2 && $link->getPassword()==null)
+            //sprawdzenie czy haslo zostalo ustawione przy trybie chronionym
+            if($link->getModyficator()==2 && $link->getPassword()==null)
             {
-        		$form->get('password')->addError(new FormError('Podaj hasło'));
+                $form->get('password')->addError(new FormError('Podaj hasło'));
                 $flag = false;
-        	}
-        	//sprawdzenie unikalności shortLinku
-        	if($link->getShortLink())
+            }
+            //sprawdzenie unikalności shortLinku
+            if($link->getShortLink())
             {
-        		if(!$helper->unique($link->getShortLink()))
+                if(!$helper->unique($link->getShortLink()))
                 {
-
-        			$form->get('shortLink')->addError(new FormError('Rządana nazwa już istnieje w bazie danych, wybierz inną 
+                    $form->get('shortLink')->addError(new FormError('Rządana nazwa już istnieje w bazie danych, wybierz inną 
         				lub zostanie ona wygenerowana'));
                     $flag = false;
-        		}
+                }
             }
              //jeśli trafił na błędy renderuje formularz z wiadomościami                                  
              if($flag == false)
@@ -65,12 +65,10 @@ class LinkerController extends Controller
                     }
                 }
             }    
-
-               $link->setAddDate();
-        	   $dm = $this->getDoctrine()->getManager();
-        	   $dm ->persist($link);
-        	   $dm ->flush();
-        	return $this->redirectToRoute('show', array('link'=>$link->getShortLink()));
+               $dm = $this->getDoctrine()->getManager();
+               $dm ->persist($link);
+               $dm ->flush();
+            return $this->redirectToRoute('show', array('link'=>$link->getShortLink()));
         }
         return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>$form->createView()));
     }
@@ -82,16 +80,16 @@ class LinkerController extends Controller
         $linker=new Link();
         $dm=$this->getDoctrine()->getManager();
         $linker=$dm->getRepository('LinkerBundle:Link')->findOneByShortLink($link);
-		return $this->render('LinkerBundle:Default:show.html.twig', array('link'=>$linker->getShortLink()));
+        return $this->render('LinkerBundle:Default:show.html.twig', array('link'=>$linker->getShortLink()));
     }
 
     /**
      * @Route("/long/{shortLink}")
      */
     public function showLongAction(Request $request, $shortLink){
-    	$link = new Link();
-    	$dm=$this->getDoctrine()->getManager();
-    	$link=$dm->getRepository('LinkerBundle:Link')->findOneByShortLink($shortLink);
+        $link = new Link();
+        $dm=$this->getDoctrine()->getManager();
+        $link=$dm->getRepository('LinkerBundle:Link')->findOneByShortLink($shortLink);
 
         $shortLink=$link->getShortLink();
         //jeśli tryb chroniony podaj haslo
@@ -142,24 +140,69 @@ class LinkerController extends Controller
         return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>'form'));
     }
     /**
-     * @Route("/baza")
+     * @Route("/baza/{rpp}/{page}", defaults={"rpp": "10", "page": "1"})
      */
-    public function bazaAction()
+    public function bazaAction($rpp, $page)
     {
         //wyswietla wszytkie wpisy publiczne wraz z opisem i skrótem oraz czasem dodania
-        // tabela -skrócony link, data dodania, opis
+
         $qb = $this->getDoctrine()->getManager()->getRepository('LinkerBundle:Link')
         ->createQueryBuilder('u');
-        $qb->select( 'u.shortLink', 'u.addDate', 'u.longLink')
+        $qb->select( 'u.shortLink', 'u.addDate', 'u.longLink', 'u.description')
         ->where('u.modyficator = 0')
         ->orderBy('u.addDate', 'ASC');
         $dane = $qb->getQuery()->getResult();
+        //liczba recordów w tabeli
+        $totalCount=count($dane);
 
-        return $this->render('LinkerBundle:Default:baza.html.twig', array('qb'=>$dane));
+        $qb->setFirstResult($rpp*($page - 1))
+        ->setMaxResults($rpp);
+        $dane = $qb->getQuery()->getResult();
+        //paginacja
+        $paginator = new Paginator($totalCount, $page, $rpp);
+        //totalPages
+        $totalPages = $paginator->getTotalPages();
+        //tablica stron 1,2,3....
+        $pagesList = $paginator->getPagesList();
+        $option = array(5, 10, 20);
+
+        return $this->render('LinkerBundle:Default:baza.html.twig', array(
+            'qb'=>$dane, 
+            'totalCount'=>$totalCount,
+            'page' => $page,
+            'rpp' => $rpp,
+            'totalPages' => $totalPages,
+            'pagesList' => $pagesList,
+            'option' =>$option
+            ));
     }
+    /**
+     * @Route("/search")
+     */
+    public function searchAction()
+    {
+        // zrobić formularze zapytań, kolejność jak w bazie, shortlink, longlink, opis, przedział daty 
+        //sortowanie wg DEC/ASC 
+        //formularz
+        $link = new Link();
+        $form = $this->createFormBuilder($link)
+        ->add('shortLink', array('request' => false))
+        ->add('longLink', array('request' => false))
+        ->add('addDate', 'date', array('request' => false))
+        ->getForm();
+        /*
+        //form->valid
+        $form->handleRequest($request)
+        {
+            //przekzanie danych i szukanie
+            querySearch($qb, $data);
 
-
-    //zrobić wyszykiwarke
+        }
+        */
+        //szukanie
+        return $this->render('LinkerBundle:Default:search.html.twig', array('form'=>$form->createView(),'qb'=>$dane));
+    }
+    
 
 
 }
