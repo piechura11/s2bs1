@@ -5,10 +5,15 @@ namespace LinkerBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 
+#fixme: Widzvę tabulacje : (
 class LinkForm extends AbstractType{
 	 public function buildForm(FormBuilderInterface $builder, array $options)
 	 {
 	 	$builder
+        #fixme: Formatowanie.
+        #fixme: Labelki powinny być w widoku.
+        #fixme: 'required' => 'NotBlank' nie zadziała, bo
+        #       required może być albo true, albo false.
 	 	 ->add('longLink', 'textarea', array('required' => 'NotBlank', 'label'=>'Wpisz link do skrócenia'))
         ->add('shortLink', 'text', array('required'=>false, 'label'=>'Nazwa krótkiego Url'))
         ->add('description', 'textarea', array('required'=>false, 'label'=>'Opis'))

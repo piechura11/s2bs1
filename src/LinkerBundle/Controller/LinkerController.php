@@ -4,16 +4,18 @@ namespace LinkerBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;#fixme: not in use
 use LinkerBundle\Entity\Link;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Form\FormError;
 use LinkerBundle\Form\LinkForm;
 use LinkerBundle\Service\Helper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+#fixme: TU brakuje spacji
 class LinkerController extends Controller
 {
     /**
+     * #fixme: Definitywnie trzeba skrócić tą akcję
      * @Route("/index")
      */
     public function indexAction(Request $request )
@@ -22,13 +24,18 @@ class LinkerController extends Controller
         #todo -mailing przy podanym adresie, link do edycji, dodawania hała, zmieniania hasła, opisu
         #todo -dodać czas dodania do bazy danych
         $link = new Link();
+        #fixme: nie dawać spacji wokół '->'
         $form = $this -> createForm(new LinkForm(), $link);
         $form -> handleRequest($request);
         $helper = $this->get('linker_helper');
         if($form->isValid())
         {
             $flag = true;
+            #fixme: Widzę tu tabulacje
         	//sprawdzenie czy haslo zostalo ustawione przy trybie chronionym
+           #fixme: To da się rozwiązać za pomocą walidacji
+           #        poczytaj sobie o tworzeniu walidatorów. To dodatkowy temat,
+           #        ale wiele się nauczysz
         	if($link->getModyficator()==2 && $link->getPassword()==null)
             {
         		$form->get('password')->addError(new FormError('Podaj hasło'));
@@ -40,20 +47,22 @@ class LinkerController extends Controller
         		if(!$helper->unique($link->getShortLink()))
                 {
 
-        			$form->get('shortLink')->addError(new FormError('Rządana nazwa już istnieje w bazie danych, wybierz inną 
+        			$form->get('shortLink')->addError(new FormError('Rządana nazwa już istnieje w bazie danych, wybierz inną
         				lub zostanie ona wygenerowana'));
                     $flag = false;
         		}
             }
-             //jeśli trafił na błędy renderuje formularz z wiadomościami                                  
+             //jeśli trafił na błędy renderuje formularz z wiadomościami
              if($flag == false)
              {
-                 return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>$form->createView()));  
-             }  
+                 return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>$form->createView()));
+             }
             //generowanie shortLinku
-           if(!$link->getShortLink()) 
+           if(!$link->getShortLink())
             {
                 //sprawdzenie unikalności, jeśli nie jest, generuje
+                #fixme: sprawdź, czy nie da się tego zrobić za pomocą doctrina
+                #       na poziomie bazy danych
                 $i = false;
                 while($i == false)
                 {
@@ -64,8 +73,9 @@ class LinkerController extends Controller
                     $i = true;
                     }
                 }
-            }    
-
+            }
+                #fixme: to powinno leżeć w encji. Można dać do kontructora,
+                #       ale można też użyć eventów doctrinowych
                $link->setAddDate();
         	   $dm = $this->getDoctrine()->getManager();
         	   $dm ->persist($link);
@@ -106,12 +116,12 @@ class LinkerController extends Controller
                 //sprawdza poprawność hasla
                 if($link->getPassword() == $protected->getPassword()){
 
-                    return $this->redirect($link->getLongLink());   
+                    return $this->redirect($link->getLongLink());
                 }
                 else{
                     $form->get('password')->addError(new FormError('Podaj hasło aby przejść do strony'));
                     return $this->render('LinkerBundle:Default:protected.html.twig', array('form'=>$form->createView(), 'shortLink'=>$shortLink
-                ));                    
+                ));
                 }
             }
             return $this->render('LinkerBundle:Default:protected.html.twig', array('form'=>$form->createView(), 'shortLink'=>$shortLink
@@ -122,7 +132,7 @@ class LinkerController extends Controller
 
 
 
-    	
+
     }
     /**
      * @Route("/kontakt")
@@ -131,6 +141,7 @@ class LinkerController extends Controller
     {
         $mailer = $this->get('mailer');
         $message =$mailer->createMessage()
+        #fixme: wcięcia. Plus te dane powinny być pomierane z pliki parameters.yml
         ->setFrom('piechura11@gmail.com')
         ->setTo('piechura11@gmail.com')
         ->setSubject('Ważna sprawa')
@@ -151,10 +162,14 @@ class LinkerController extends Controller
         $qb = $this->getDoctrine()->getManager()->getRepository('LinkerBundle:Link')
         ->createQueryBuilder('u');
         $qb->select( 'u.shortLink', 'u.addDate', 'u.longLink')
+        #fixme: wcięcia
         ->where('u.modyficator = 0')
         ->orderBy('u.addDate', 'ASC');
         $dane = $qb->getQuery()->getResult();
 
+        #fixme: zwracasz dane/wyniki wyszukiwania, a w twigu będą dostępne jako
+        #       zmienna qb. Trochę agresywne. Ja bym się pokusił o zmienną results
+        #       lub nawet links, shortUrl, lub jeszcze czegoś innego.
         return $this->render('LinkerBundle:Default:baza.html.twig', array('qb'=>$dane));
     }
 
