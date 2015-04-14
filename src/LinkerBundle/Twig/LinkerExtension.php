@@ -4,6 +4,9 @@ namespace LinkerBundle\Twig;
 use Twig_Extension;
 use Twig_Filter_Method;
 
+#fixme: Nie wiem w którym momencie tego potrzebowałeś, ale fajnie, że dotarłeś
+#       do takiego etapu : )
+#fixme: taby...
 class LinkerExtension extends Twig_Extension
 {
 	public function getFilters()
