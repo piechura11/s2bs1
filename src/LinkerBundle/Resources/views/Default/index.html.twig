@@ -1,25 +1,8 @@
-   <html>
-        <head>  
-            {% block stylesheets %}
-                  <link href="{{ asset('css/foundation.min.css') }}" rel="stylesheet" />
-            {% endblock %}
+{% extends 'LinkerBundle::base.html.twig' %}
 
-        </head>
-        <body>
+{% block title %}Witaj {% endblock %}
 
-<div class="row">
-      <div class="large-12 columns">
-        <h1>LinkerBundle</h1>
-        <a href="http://localhost/s2bs1/web/app_dev.php/baza">Baza</a>
-        <a href="http://localhost/s2bs1/web/app_dev.php/mail">Kontakt</a>
-        <a href="http://localhost/s2bs1/web/app_dev.php/search">Wyszukaj</a>
-      </div>
-    </div>
-
-
-        <div class="row">
-      <div class="large-12 columns">
-            	<div class="panel">
+{% block body %}
 Formularz:
 {{form_start(form)}}
 {{form_errors(form)}}
@@ -31,17 +14,5 @@ Opcjonalne:
 {{form_row(form.description)}}
 <button type="submit">Utwórz krótki URL</button>
 {{form_end(form)}}
-      </div>
-    </div>
-  </div>
-        </body>
-    </html>
 
-
-
-
-
-
-
-
-
+{% endblock %}

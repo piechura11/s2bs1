@@ -1,28 +1,8 @@
-   <html>
-        <head>  
+{% extends 'LinkerBundle::base.html.twig' %}
 
-            {% block stylesheets %}
-                  <link href="{{ asset('css/foundation.min.css') }}" rel="stylesheet" />
-            {% endblock %}
+{% block title %}Witaj {% endblock %}
 
-        </head>
-  <body>
-
-
-
-<div class="row">
-      <div class="large-12 columns">
-        <div class="panel">
-        <h1>LinkerBundle</h1>
-        <a href="http://localhost/s2bs1/web/app_dev.php/index">Skróć</a>
-        <a href="http://localhost/s2bs1/web/app_dev.php/baza">Baza</a>
-        <a href="http://localhost/s2bs1/web/app_dev.php/mail">Kontakt</a>
-        <a href="http://localhost/s2bs1/web/app_dev.php/search">Wyszukaj</a>
-      </div>
-    </div
-            <div class="row">
-      <div class="large-12 columns">
-                <div class="panel">
+{% block body %}
             Rezultaty:
     </br>
         Jesteś na {{page}} z {{totalPages}} stronie, liczba wszystkich dostępnych linków: {{totalCount}}
@@ -76,10 +56,7 @@
             {% endif%}
             {% endfor %}
         </select>
-        </div>
-        </div>
-  </body>
-</html>
+{% endblock %}
 
 
 

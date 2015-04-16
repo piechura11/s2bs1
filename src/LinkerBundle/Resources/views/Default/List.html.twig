@@ -1,48 +1,9 @@
-   <html>
-        <head>  
-            {% block stylesheets %}
-                  <link href="{{ asset('css/foundation.min.css') }}" rel="stylesheet" />
-            {% endblock %}
+{% extends 'LinkerBundle::base.html.twig' %}
 
-        </head>
-  <body>
-        <div class="row">
-        <div class="large-12 columns">
-        <h1>LinkerBundle</h1>
-        </div>
-        </div>
+{% block title %}Wyszukiwarka {% endblock %}
 
-        <div class="row">
-        <div class="large-12 columns">
-        <div class="panel">
-
-        Rezultaty:
-        <table>
-            <thead>
-                <tr>
-                    <th>Skrócony link</th>
-                    <th>Docelowy adres</th>
-                    <th>Data dodania</th>
-                </th>
-            </thead>
-            <tbody>
-        {% for dane in qb%}
-        <tr>
-        <th><a href="http://localhost/s2bs1/web/app_dev.php/show/{{dane.shortLink}}">
-            {{dane.shortLink}}</a>
-        </th>
-        <th>{{dane.longLink|longLinkFilter(dane.longLink)}}</th>
-        <th>{{ dane.addDate|date('Y-m-d H:i:s')  }}</th>
-        </tr>
-        {% endfor %}
-            <tbody>
-        </table>
-        </div>
-        </div>
-        </div>
-  </body>
-</html>
-
+{% block body %}
+{% endblock %}
 
 
 

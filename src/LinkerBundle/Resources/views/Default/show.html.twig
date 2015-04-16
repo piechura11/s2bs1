@@ -1,23 +1,7 @@
-   <html>
-        <head>  
-            {% block stylesheets %}
-                  <link href="{{ asset('css/foundation.min.css') }}" rel="stylesheet" />
-            {% endblock %}
+{% extends 'LinkerBundle::base.html.twig' %}
 
-        </head>
-        <body>
-  <div class="row">
-      <div class="large-12 columns">
-        <h1>LinkerBundle</h1>
-      </div>
-    </div>
+{% block body %}
 
-        <div class="row">
-      <div class="large-12 columns">
-            	<div class="panel">
+Twój skrócony link: <a href="/s2bs1/web/app_dev.php/long/{{link}}">http://localhost/s2bs1/web/app_dev.php/long/{{link}}</a>
 
-ShortLink: <a href="/s2bs1/web/app_dev.php/long/{{link}}"">http://localhost/s2bs1/web/app_dev.php/long/{{link}}</a>
-
-      </div>
-    </div>
-        </div>
+{% endblock %}

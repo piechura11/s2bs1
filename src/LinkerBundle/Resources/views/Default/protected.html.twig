@@ -1,32 +1,15 @@
-    <html>
-        <head>  
-            {% block stylesheets %}
-                  <link href="{{ asset('css/foundation.min.css') }}" rel="stylesheet" />
-            {% endblock %}
+{% extends 'LinkerBundle::base.html.twig' %}
 
-        </head>
-        <body>
-  <div class="row">
-      <div class="large-12 columns">
-        <h1>LinkerBundle</h1>
-      </div>
-    </div>
+{% block body %}
 
-        <div class="row">
-      <div class="large-12 columns">
-            	<div class="panel">
-Link zabezpieczony hasłem, aby przejść wpisz hasło </br>
-{{shortLink}}
+Link <b>{{shortLink}}</b> zabezpieczony hasłem, aby przejść wpisz hasło </br>
+
 
 {{form_start(form)}}
 {{form_errors(form)}}
 
-
 {{form_row(form.password)}}
-
 <button type="submit">Przejdz do strony</button>
 {{form_end(form)}}
-      </div>
 
-          </div>
-              </div>
+{% endblock %}

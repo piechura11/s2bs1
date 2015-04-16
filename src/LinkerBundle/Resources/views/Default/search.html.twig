@@ -1,20 +1,8 @@
-   <html>
-        <head>  
-            {% block stylesheets %}
-                  <link href="{{ asset('css/foundation.min.css') }}" rel="stylesheet" />
-            {% endblock %}
+{% extends 'LinkerBundle::base.html.twig' %}
 
-        </head>
-  <body>
-        <div class="row">
-        <div class="large-12 columns">
-        <h1>LinkerBundle</h1>
-        </div>
-        </div>
+{% block title %}Wyszukiwarka {% endblock %}
 
-        <div class="row">
-        <div class="large-12 columns">
-        <div class="panel">
+{% block body %}
 
         Rezultaty:
         <table>
@@ -36,12 +24,7 @@
         </tr>
         {% endfor %}
             <tbody>
-        </table>
-        </div>
-        </div>
-        </div>
-  </body>
-</html>
+{% endblock %}
 
 
 
