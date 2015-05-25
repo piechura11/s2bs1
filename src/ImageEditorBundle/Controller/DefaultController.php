@@ -7,6 +7,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use ImageEditorBundle\Entity\Image;
 use Symfony\Component\HttpFoundation\Request;
+use ImageEditorBundle\Service\Edition;
 /**
 * @Route("/img")
 */
@@ -33,11 +34,10 @@ class DefaultController extends Controller
 	            $em->flush();
 	            $session=$this->getRequest()->getSession();
 	            $session->set('obrazek', $image->getPath());
-	            $this->redirect($this->generateUrl('menu'));
+	            $this->redirect($this->generateUrl('base'));
 	        }
 	    }
 	        return $this->render('ImageEditorBundle:Default:index.html.twig', array('form'=>$form->createView()));
-
     }
     /**
      * @Route("/menu",name="menu")
@@ -48,32 +48,9 @@ class DefaultController extends Controller
     	//wraz z suwakami, pokrętłami, zakresami   
     	$session=$this->getRequest()->getSession();
 
-
     return $this->render('ImageEditorBundle:Default:menu.html.twig', array('image'=>$session->get('obrazek')));
     }
 
-    /**
-     * @Route("/menu/brigness", name="brigness")
-     */
-    public function brignessAction($prefix, $uploads, $brigness)
-    {
-    //rozjaśnienie 
-    $image=imagecreatefromjpeg($prefix);
-    imagefilter($image, IMG_FILTER_BRIGHTNESS, $brigness);
-    imagejpeg($image, $uploads, 100);
-    return $this->redirect($this->generateUrl('base'));    
-    }
-    /**
-     * @Route("/menu/contrast", name="contrast")
-     */
-    public function contrastAction($prefix, $uploads, $contrast)
-    {
-    //contrast 
-    $image=imagecreatefromjpeg($prefix);
-    imagefilter($image, IMG_FILTER_CONTRAST, $contrast);
-    imagejpeg($image, $uploads, 100);
-    return $this->redirect($this->generateUrl('base'));
-    }
     /**
      * @Route("/menu/base", name="base")
      */
@@ -85,18 +62,27 @@ class DefaultController extends Controller
     $prefix = 'http://localhost/web/uploads/obrazki/'.$img;
     $uploads = __DIR__."/../../../../web/uploads/obrazki/".$img;
 
+
     $request  = $this->getRequest();
 	$brigness = $request->request->get('level');
 	$contrast = $request->request->get('contrast');
 	$negate = $request->request->get('negate');
 	$gray = $request->request->get('gray');
+	$edge = $request->request->get('edge');
+    $editor = $this->get('edition');
 
-	$colorize=array(0, 70, 0);
-	$this->contrastAction($prefix, $uploads, $contrast);
-	$this->brignessAction($prefix, $uploads, $brigness);
-	$this->negateAction($prefix, $uploads, $negate);
-	$this->grayAction($prefix, $uploads, $gray);
-	$this->colorizeAction($prefix, $uploads, $colorize);
+    $colorize=array(0, 0, 0);
+
+    $editor->setPrefix($prefix);
+    $editor->setUploads($uploads);
+    $editor->grayAction($prefix, $uploads, $gray);
+    $editor->contrastAction($prefix, $uploads, $contrast);
+    $editor->brignessAction($prefix, $uploads, $brigness);
+    $editor->colorizeAction($prefix, $uploads, $colorize);
+    $editor->edgeAction($prefix, $uploads, $edge);
+    $editor->negateAction($prefix, $uploads, $negate);
+
+
     return $this->render('ImageEditorBundle:Default:baseAction.html.twig', array('image'=>$img));
     }
     /**
@@ -110,42 +96,6 @@ class DefaultController extends Controller
 
     return $this->render('ImageEditorBundle:Default:sizeAction.html.twig', array('image'=>$img));
     }
-    /**
-     * @Route("/menu/negate", name="negate")
-     */
-    public function negateAction($prefix, $uploads, $negate=false)
-    {
-    //negatyw
-    if($negate == true){
-    $image=imagecreatefromjpeg($prefix);
-    imagefilter($image, IMG_FILTER_NEGATE);
-    imagejpeg($image, $uploads, 100);
-    }
-    return $this->redirect($this->generateUrl('base'));
-    }
-    /**
-     * @Route("/menu/gray", name="gray")
-     */
-    public function grayAction($prefix, $uploads, $gray=false)
-    {
-    //negatyw
-    if($gray == true){
-    $image=imagecreatefromjpeg($prefix);
-    imagefilter($image, IMG_FILTER_GRAYSCALE);
-    imagejpeg($image, $uploads, 100);
-    }
-    return $this->redirect($this->generateUrl('base'));
-    }
-    /**
-     * @Route("/menu/colorize", name="colorize")
-     */
-    public function colorizeAction($prefix, $uploads, $colorize)
-    {
-    $image=imagecreatefromjpeg($prefix);
-    imagefilter($image, IMG_FILTER_COLORIZE, $colorize[0], $colorize[1], $colorize[2]);
-    imagejpeg($image, $uploads, 100);
 
-    return $this->redirect($this->generateUrl('base'));
-
-    }
+    
 }
