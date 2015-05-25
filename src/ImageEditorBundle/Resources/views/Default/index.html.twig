@@ -1,0 +1,22 @@
+{% extends 'ImageEditorBundle::base.html.twig' %}
+
+{% block title %}Index{% endblock %}
+
+{% block body %}
+
+
+<div class="row">
+<form action="action_page.php" method="get">
+  Points:
+  <input type="range" name="points" min="0" max="100", value="50" step="1">
+  <input type="submit">
+</form>
+            
+Wrzuć
+{{form_start(form)}}
+{{form_errors(form)}}
+{{form_row(form.file)}}
+<button type="submit">Wrzuć zdjęcie</button>
+{{form_end(form)}}
+</div>
+{% endblock %}
