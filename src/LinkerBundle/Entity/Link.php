@@ -60,11 +60,11 @@ class Link
      * @ORM\Column(name="addDate", type="datetime" )
      */
     private $addDate;
-
+/*
     public function __construct(){
       $this->addDate = new \DateTime();
     }
-  
+  */
 
     /**
      * Get id

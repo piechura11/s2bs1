@@ -90,12 +90,14 @@ class DefaultController extends Controller
      */
     public function sizeAction(Request $request)
     {
-    	//funkcjie: przytnij, dostosuj wymiary, powiększ, zmiejsz
+    //funkcje: przytnij, dostosuj wymiary, powiększ, zmiejsz
     header('Content-Type: image/jpeg');
     $session=$this->getRequest()->getSession();
+    $img=$session->get('obrazek');
 
     return $this->render('ImageEditorBundle:Default:sizeAction.html.twig', array('image'=>$img));
     }
+
 
     
 }

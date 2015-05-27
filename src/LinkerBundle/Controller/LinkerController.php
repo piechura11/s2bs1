@@ -11,6 +11,9 @@ use LinkerBundle\Form\LinkForm;
 use LinkerBundle\Service\Helper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use LinkerBundle\Service\Paginator;
+use LinkerBundle\Service\Search;
+use FOS\UserBundle\Doctrine\UserManager;
+use Symfony\Component\Validator\Constraints\All;
 
 class LinkerController extends Controller
 {
@@ -18,11 +21,9 @@ class LinkerController extends Controller
      * @Route("/index")
      */
     public function indexAction(Request $request )
-    {   #todo -pobieranie ostatnich 10 linkerów, - wyswietlanie statystyk(-ilość linkerów w bd, licznik odwiedzin)
-        #todo - wyszukiwarka
-        #todo -mailing przy podanym adresie, link do edycji, dodawania hała, zmieniania hasła, opisu
-
+    {   
         $link = new Link();
+        $link->setAddDate();
         $form = $this -> createForm(new LinkForm(), $link);
         $form->handleRequest($request);
         $helper = $this->get('linker_helper');
@@ -108,44 +109,26 @@ class LinkerController extends Controller
                 }
                 else{
                     $form->get('password')->addError(new FormError('Podaj hasło aby przejść do strony'));
-                    return $this->render('LinkerBundle:Default:protected.html.twig', array('form'=>$form->createView(), 'shortLink'=>$shortLink
+                    return $this->render('LinkerBundle:Default:protected.html.twig', array(
+                        'form'=>$form->createView(), 
+                        'shortLink'=>$shortLink
                 ));                    
                 }
             }
-            return $this->render('LinkerBundle:Default:protected.html.twig', array('form'=>$form->createView(), 'shortLink'=>$shortLink
+            return $this->render('LinkerBundle:Default:protected.html.twig', array(
+                'form'=>$form->createView(), 
+                'shortLink'=>$shortLink
                 ));
         }
-
     	return $this->redirect($link->getLongLink());
-
-
-
-    	
     }
-    /**
-     * @Route("/kontakt")
-     */
-    public function mailMe()
-    {
-        $mailer = $this->get('mailer');
-        $message =$mailer->createMessage()
-        ->setFrom('piechura11@gmail.com')
-        ->setTo('piechura11@gmail.com')
-        ->setSubject('Ważna sprawa')
-        ->setBody('treść', 'text/html');
 
-        $mailer->send($message);
-        ////poprawić szablon inaczej nie wysysła
-
-        return $this->render('LinkerBundle:Default:index.html.twig', array('form'=>'form'));
-    }
     /**
      * @Route("/baza/{rpp}/{page}", defaults={"rpp": "10", "page": "1"})
      */
     public function bazaAction($rpp, $page)
     {
         //wyswietla wszytkie wpisy publiczne wraz z opisem i skrótem oraz czasem dodania
-
         $qb = $this->getDoctrine()->getManager()->getRepository('LinkerBundle:Link')
         ->createQueryBuilder('u');
         $qb->select( 'u.shortLink', 'u.addDate', 'u.longLink', 'u.description')
@@ -179,30 +162,36 @@ class LinkerController extends Controller
     /**
      * @Route("/search")
      */
-    public function searchAction()
+    public function searchAction(Request $request)
     {
         // zrobić formularze zapytań, kolejność jak w bazie, shortlink, longlink, opis, przedział daty 
         //sortowanie wg DEC/ASC 
         //formularz
-        $link = new Link();
-        $form = $this->createFormBuilder($link)
-        ->add('shortLink', array('request' => false))
-        ->add('longLink', array('request' => false))
-        ->add('addDate', 'date', array('request' => false))
+        
+        $form = $this->createFormBuilder()
+        ->add('shortLink', 'text', array('required'=>false))
+        ->add('longLink', 'text', array('required'=>false))
+        ->add('addDate', 'date', array('widget'=> 'single_text',
+        'format'=>'yyyy-MM-dd',
+         'required'=>false))
+        ->setMethod('GET')
         ->getForm();
-        /*
-        //form->valid
-        $form->handleRequest($request)
-        {
-            //przekzanie danych i szukanie
-            querySearch($qb, $data);
 
-        }
-        */
-        //szukanie
-        return $this->render('LinkerBundle:Default:search.html.twig', array('form'=>$form->createView(),'qb'=>$dane));
-    }
-    
-
+        $dane=array();
+        $form->handleRequest($request);
+            
+        $data = $request->query->all();
+        $qb = $this->getDoctrine()->getManager()->getRepository('LinkerBundle:Link')
+            ->createQueryBuilder('a');
+            $qb->select('a')
+            ->where('a.modyficator = 0')
+            ->orderBy('a.addDate', 'ASC');
+            $dane = $this->get('linker_search')->querySearch($qb, $form->getData());
+            $dane = $qb->getQuery()->getResult();
+        
+        return $this->render('LinkerBundle:Default:search.html.twig', array(
+            'form'=>$form->createView(),
+            'qb'=>$dane));
+    }	
 
 }

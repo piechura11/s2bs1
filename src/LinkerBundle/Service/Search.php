@@ -6,7 +6,7 @@ use LinkerBundle\Entity\Link;
 
 class Search
 {
-	public function querySearch($qb, $data = [])
+	public function querySearch($qb, $data)
 	{
 		if(!empty($data['shortLink']))
 		{
@@ -27,24 +27,25 @@ class Search
 				$qb->expr()->orX(
 					$qb->expr()->like(
 					'a.longLink',
-					$qb->expr()->literal('%'.$data['longLink'].'%')
+					$qb->expr()->literal('%'.$data['longLink'].'%'))
 					)
 				);
 		}
 
 		if(!empty($data['addDate']))
 		{
-			$date = new \DateTime($data['addDate']);
+			$date = $data['addDate'];
 			$qb->andWhere(
 				$qb->expr()->orX(
 					$qb->expr()->like(
 						'a.addDate',
-						$qb->expr()->literal($date->format('Y-m-d'))
+						$qb->expr()->literal('%'.$date->format('Y-m-d').'%')
+
 						)
 					)
 				);
 		}
 
-
+        return $qb;
 	}
-}d
+}

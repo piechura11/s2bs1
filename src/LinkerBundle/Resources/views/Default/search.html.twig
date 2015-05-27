@@ -3,7 +3,14 @@
 {% block title %}Wyszukiwarka {% endblock %}
 
 {% block body %}
-
+    Formularz:
+{{form_start(form)}}
+{{form_errors(form)}}
+{{form_row(form.longLink)}}
+{{form_row(form.shortLink)}}
+{{form_row(form.addDate)}}
+<button type="submit">Szukaj</button>
+{{form_end(form)}}
         Rezultaty:
         <table>
             <thead>
@@ -14,13 +21,14 @@
                 </th>
             </thead>
             <tbody>
-        {% for dane in qb%}
+        {% for dane in qb %}
         <tr>
         <th><a href="http://localhost/s2bs1/web/app_dev.php/show/{{dane.shortLink}}">
             {{dane.shortLink}}</a>
         </th>
         <th>{{dane.longLink|longLinkFilter(dane.longLink)}}</th>
-        <th>{{ dane.addDate|date('Y-m-d H:i:s')  }}</th>
+        <th>{{dane.addDate|date('Y-m-d')}}</th>
+        
         </tr>
         {% endfor %}
             <tbody>

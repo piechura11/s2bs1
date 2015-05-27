@@ -24,7 +24,7 @@ class LinkerExtension extends Twig_Extension
 
 		$firstPart = substr($longLink, 0, $ile);
 		$secendPart = substr($longLink, 2*($ile), $ile);
-		//echo $ile.'  ';
+		
 		return $longLink = $firstPart.'(...)'.$secendPart;
 	}
 
